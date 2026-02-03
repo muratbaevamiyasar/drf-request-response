@@ -8,4 +8,3 @@ class Item(models.Model):
     price = models.FloatField()
     is_active = models.BooleanField()
 
-    

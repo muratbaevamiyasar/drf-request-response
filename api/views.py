@@ -33,14 +33,35 @@ class ItemListView(APIView):
     def post(self, request: Request) -> Response:
         data = request.data
 
-        return Response({}, status=status.HTTP_201_CREATED)
+        item_serializer = ItemSerializer(data=data)
+        if item_serializer.is_valid(raise_exception=True):
+            validated_data = item_serializer.validated_data
+
+            item = Item(
+                name=validated_data['name'],
+                desc=validated_data['desc'],
+                price=validated_data['price'],
+                category=validated_data['category'],
+                is_active=validated_data['is_active'],
+            )
+            item.save()
+
+            response_serializer = ItemSerializer(item)
+
+            return Response(response_serializer.data)
 
 
 class ItemDetailView(APIView):
     
     def get(self, request: Request, pk: int) -> Response:
 
-        return Response({'method': 'get'}, status=status.HTTP_200_OK)
+        item = Item.objects.filter(pk=pk).first()
+        if item:
+            serializer = ItemSerializer(item)
+
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        return Response({'error': 'no item'}, status=status.HTTP_404_NOT_FOUND)
     
     def put(self, request: Request, pk: int) -> Response:
         return Response({'method': 'put'}, status=status.HTTP_200_OK)
